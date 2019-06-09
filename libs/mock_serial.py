@@ -2,7 +2,10 @@ import logging
 import queue
 
 
-class ReadTimeout(Exception):
+class SerialException(Exception):
+    pass
+
+class ReadTimeout(SerialException):
     pass
 
 
@@ -16,9 +19,11 @@ class MockSerial:
 
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
 
-    def __init__(self, mock_device):
+    def __init__(self, port_name : str, mock_device):
         """
         Init
+        @param port_name: Name of port; unused, but simulates many serial
+                          abstractions
         @param mock_device: A fake device containing a do_write(bytes) method
                             that returns a bytes-like object response or None
         @return:
@@ -27,6 +32,13 @@ class MockSerial:
 
         self._dev = mock_device
         self._recv_queue = queue.Queue()
+        self._is_open = False
+
+    def open(self):
+        self._is_open = True
+
+    def close(self):
+        self._is_open = False
 
     def write(self, msg: bytes):
         """
@@ -34,6 +46,9 @@ class MockSerial:
         @param msg: Message to write to device
         @return: Number of bytes written
         """
+        if not self._is_open:
+            raise SerialException("Port not open!")
+
         rsp = self._dev.do_write(msg)
 
         logging.debug("Sent {}".format(msg))
@@ -51,6 +66,9 @@ class MockSerial:
         @param timeout_s: Inter-byte timeout in seconds. How long to wait for
                           a byte to be received.
         """
+        if not self._is_open:
+            raise SerialException("Port not open!")
+
         msg = bytes()
         for _ in range(num_bytes):
             try:
