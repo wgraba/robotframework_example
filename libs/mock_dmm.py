@@ -88,4 +88,4 @@ class MockDmm:
         return "10203040"
 
     def _read_volts(self):
-        return random.random() * 10.0
+        return "{:.6E}".format(random.random() * 10.0)
