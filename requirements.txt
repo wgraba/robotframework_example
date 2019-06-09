@@ -1,0 +1,5 @@
+robotframework>=3.1
+pyserial>=3.4
+docutils>=0.14
+pylint>=2.3
+black>=19.3
