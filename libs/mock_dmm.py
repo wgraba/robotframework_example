@@ -38,7 +38,9 @@ class MockDmm:
 
         self._msg_queue = queue.Queue()
 
-    def do_write(self, input: bytes):
+        print('Started')
+
+    def do_write(self, input_data: bytes):
         """
         Peform a simulated write.
 
@@ -51,13 +53,14 @@ class MockDmm:
         @return: Stream of bytes. Empty bytes-object if no command yet 
                  received to parse.
         """
+        logging.debug("Input {}".format(input_data))
         rsp = bytes()
 
         msgs = []
-        for b in input:
-            if b == self.EOM:
+        for c in input_data.decode("ascii"):
+            if c == self.EOM:
                 # Get Message since EOM is found
-                msg = bytes()
+                msg = ""
                 while True:
                     try:
                         msg += self._msg_queue.get_nowait()
@@ -68,15 +71,17 @@ class MockDmm:
                 msgs.append(msg)
 
             else:
-                self._msg_queue.put(b)
+                self._msg_queue.put(c)
 
         for msg in msgs:
             # New Message exists -> Parse
+            logging.debug("Parsing {}...".format(msg))
             cmd_rsp = self.SYNTAX_ERROR
             for regex, cmd_func in self._cmds:
-                if regex.fullmatch(msg.decode("ascii")):
-                    cmd_rsp = cmd_func()
+                if regex.fullmatch(msg):
+                    cmd_rsp = cmd_func() + self.EOM
 
+            logging.debug("Response {}".format(cmd_rsp))
             rsp += cmd_rsp.encode("ascii")
 
         return rsp

@@ -34,6 +34,8 @@ class MockSerial:
         self._recv_queue = queue.Queue()
         self._is_open = False
 
+        print(mock_device)
+
     def open(self):
         self._is_open = True
 
@@ -49,13 +51,14 @@ class MockSerial:
         if not self._is_open:
             raise SerialException("Port not open!")
 
+        print(self._dev)
         rsp = self._dev.do_write(msg)
 
         logging.debug("Sent {}".format(msg))
 
         if rsp is not None:
             for b in rsp:
-                self._recv_queue.put(b)
+                self._recv_queue.put(bytes([b]))
 
         return len(msg)
 
@@ -65,6 +68,7 @@ class MockSerial:
         @param num_bytes: Number of bytes to read
         @param timeout_s: Inter-byte timeout in seconds. How long to wait for
                           a byte to be received.
+        @return: Bytes stream
         """
         if not self._is_open:
             raise SerialException("Port not open!")
@@ -72,7 +76,8 @@ class MockSerial:
         msg = bytes()
         for _ in range(num_bytes):
             try:
-                msg += self._recv_queue.get(timeout=timeout_s)
+                b = self._recv_queue.get(timeout=timeout_s)
+                msg += b
 
             except queue.Empty:
                 raise ReadTimeout()
