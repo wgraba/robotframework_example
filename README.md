@@ -13,7 +13,7 @@ installed with `pip install -r requirements.txt`_
 
 # Usage
 From the root of the repository -
-`python -m robot .` or `robot .`
+`robot --variable PORT:/dev/ttyUSB0 --pythonpath libs/ tests/`
 
 # Developing
 
@@ -32,9 +32,7 @@ Many instruments require abstractions in Python to make use from Robot
 Framework easier. Abstractions are in `./libs`.
 
 Folders containing `.robot` files are test suites. `.robot` files are test suites
-containing 1...n test cases. For examples. the `comm` folder contains a file
-`commands.robot`. "basics" is a test suite that contains 1...n test suites.
-`commands.robot` is a test suite containing 1...n test cases.
+containing 1...n test cases.
 
 # Known Issues
 None
